@@ -6,6 +6,9 @@
   NODE_VERSION = "22"
   # No TYPESAFE_API_KEY. This playground is BYOK only.
 
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
 [dev]
   command = "pnpm dev"
   targetPort = 3000
