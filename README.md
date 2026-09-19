@@ -61,7 +61,7 @@ No `.env` is required. `.env.example` exists only to say: do not put a visitor k
 
 - Key storage: `sessionStorage` by default. Optional "Remember on this device" uses `localStorage`. Wipe clears both.
 - The browser sends the key as `Authorization: Bearer …` to `/api/systemone`.
-- That Next.js route forwards the visitor-supplied header into `@typesafe-ai/sdk` (`TypeSafeClient.systemOne`). It does not log the key, does not persist it, and does not fall back to `process.env.TYPESAFE_API_KEY`.
+- That Next.js route forwards the visitor-supplied header into `@typesafe-ai/sdk` (`TypeSafeClient.systemOne`). It does not log the key, does not persist it, and does not fall back to `process.env.TYPESAFE_API_KEY`. The SDK stays on the server so the browser bundle never constructs `TypeSafeClient`.
 - Direct browser calls to `https://api.typesafe.ai` were probed at build time. CORS preflight did not return `Access-Control-Allow-Origin` for arbitrary origins, so the tiny proxy exists. If TypeSafe later opens CORS, the proxy can be removed.
 - Never commit secrets. `.env*` is gitignored except `.env.example`.
 
