@@ -113,7 +113,11 @@ const response = await client.systemOne({
 
 ## Deploy
 
-`netlify.toml` is included (Netlify Next.js runtime, `pnpm build`, publish `.next`). Do not set `TYPESAFE_API_KEY` in the host environment for visitor traffic.
+Production is currently https://jev-playground-pbt1.netlify.app.
+
+`netlify.toml` pins `@netlify/plugin-nextjs` and builds with `pnpm build` (publish `.next`). GitHub continuous deploy may need the repo linked in the Netlify UI if pushes to `main` are not building yet.
+
+Do not set `TYPESAFE_API_KEY` in the host environment for visitor traffic.
 
 Vercel also works with the App Router as-is.
 
