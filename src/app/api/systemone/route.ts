@@ -7,7 +7,9 @@ import {
   type EntryType,
 } from "@typesafe-ai/sdk";
 import { ERRORS } from "@/lib/copy";
-import { parseQuestionMap, parseState, toSdkQuestions } from "@/lib/questions";
+import { parseQuestionMap } from "@/lib/question-config";
+import { toSdkQuestions } from "@/lib/sdk-questions";
+import { parseState } from "@/lib/state";
 import { DEFAULT_MODEL, type JevModel } from "@/lib/types";
 
 export const runtime = "nodejs";

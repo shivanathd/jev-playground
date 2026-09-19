@@ -26,7 +26,10 @@ export function SettingsBar({
 }: SettingsBarProps) {
   return (
     <section className="rounded-sm border border-line bg-panel p-4 md:p-5">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
+      <form
+        className="flex flex-col gap-4 lg:flex-row lg:items-end"
+        onSubmit={(event) => event.preventDefault()}
+      >
         <label className="min-w-0 flex-1">
           <span className="mb-1.5 block font-mono text-[11px] uppercase tracking-[0.16em] text-muted">
             TypeSafe API key
@@ -34,11 +37,13 @@ export function SettingsBar({
           <div className="flex gap-2">
             <input
               type={showKey ? "text" : "password"}
+              name="typesafe-api-key"
               autoComplete="off"
               spellCheck={false}
               value={apiKey}
               onChange={(event) => onKeyChange(event.target.value)}
               placeholder="Paste TYPESAFE_API_KEY"
+              data-testid="api-key-input"
               className="w-full rounded-sm border border-line bg-ink px-3 py-2 font-mono text-sm text-paper placeholder:text-muted/60"
             />
             <button
@@ -61,16 +66,18 @@ export function SettingsBar({
               onClick={() => onModelChange("jev-1.13.0")}
               label="jev-1.13.0"
               hint="pin"
+              testId="model-pin"
             />
             <ModelButton
               active={model === "jev-latest"}
               onClick={() => onModelChange("jev-latest")}
               label="jev-latest"
               hint="moves"
+              testId="model-latest"
             />
           </div>
         </fieldset>
-      </div>
+      </form>
 
       <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <label className="flex items-center gap-2 text-sm text-muted">
@@ -85,6 +92,7 @@ export function SettingsBar({
         <button
           type="button"
           onClick={onWipe}
+          data-testid="wipe-key"
           className="self-start rounded-sm border border-fail/50 px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-fail hover:bg-fail/10"
         >
           Wipe key
@@ -114,15 +122,18 @@ function ModelButton({
   onClick,
   label,
   hint,
+  testId,
 }: {
   active: boolean;
   onClick: () => void;
   label: string;
   hint: string;
+  testId: string;
 }) {
   return (
     <button
       type="button"
+      data-testid={testId}
       onClick={onClick}
       className={`px-3 py-2 font-mono text-[12px] ${
         active ? "bg-brass text-ink" : "bg-ink text-muted hover:text-paper"

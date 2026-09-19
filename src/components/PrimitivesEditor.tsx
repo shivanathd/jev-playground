@@ -1,4 +1,4 @@
-import { emptyQuestion, type QuestionTypeName } from "@/lib/questions";
+import { emptyQuestion, type QuestionTypeName } from "@/lib/question-config";
 import type { PlaygroundQuestion, QuestionMap } from "@/lib/types";
 
 type PrimitivesEditorProps = {

@@ -11,7 +11,7 @@ import { decideBranch } from "@/lib/branch";
 import { ACCESS, SITE } from "@/lib/copy";
 import { PlaygroundError } from "@/lib/errors";
 import { EXAMPLES, exampleById } from "@/lib/examples";
-import { formatState, parseState } from "@/lib/questions";
+import { formatState, parseState } from "@/lib/state";
 import { runSystemOne } from "@/lib/run-system-one";
 import {
   loadKeyStore,
@@ -214,12 +214,18 @@ export function Playground() {
           <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
+              data-testid="run-gate"
               onClick={() => void handleRun()}
               disabled={running}
               className="rounded-sm bg-brass px-4 py-2.5 font-display text-lg tracking-tight text-ink disabled:opacity-60"
             >
               {running ? "Running…" : "Run gate"}
             </button>
+            {error ? (
+              <p className="max-w-xl text-sm leading-6 text-[#f3c7c2]" role="status">
+                {error}
+              </p>
+            ) : null}
             <p className="text-sm text-muted">
               Browser sends the key as an Authorization header to this app&apos;s
               proxy. The proxy calls TypeSafe with{" "}

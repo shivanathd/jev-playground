@@ -1,4 +1,6 @@
-import type { EntryType } from "@typesafe-ai/sdk";
+import type { EntryType as SdkEntryType } from "@typesafe-ai/sdk";
+
+export type EntryType = SdkEntryType;
 
 export type JevModel = "jev-1.13.0" | "jev-latest";
 

@@ -21,6 +21,7 @@ export function WorkOrderNav({
             active={example.id === activeId}
             onSelect={onSelect}
             compact
+            testId={`work-order-${example.id}-mobile`}
           />
         ))}
       </div>
@@ -32,6 +33,7 @@ export function WorkOrderNav({
             active={example.id === activeId}
             onSelect={onSelect}
             compact={false}
+            testId={`work-order-${example.id}`}
           />
         ))}
       </div>
@@ -44,15 +46,18 @@ function OrderButton({
   active,
   onSelect,
   compact,
+  testId,
 }: {
   example: ExampleSpec;
   active: boolean;
   onSelect: (id: ExampleId) => void;
   compact: boolean;
+  testId: string;
 }) {
   return (
     <button
       type="button"
+      data-testid={testId}
       onClick={() => onSelect(example.id)}
       className={`rounded-sm border px-3 py-2 text-left transition-colors ${
         active
