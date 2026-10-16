@@ -76,11 +76,11 @@ export function SettingsBar({
               testId="model-latest"
             />
             <ModelButton
-              active={model === "jev-preview"}
-              onClick={() => onModelChange("jev-preview")}
-              label="jev-preview"
-              hint="1.14 · images"
-              testId="model-preview"
+              active={model === "jev-1.14.0"}
+              onClick={() => onModelChange("jev-1.14.0")}
+              label="jev-1.14.0"
+              hint="pin · images"
+              testId="model-images"
             />
           </div>
         </fieldset>

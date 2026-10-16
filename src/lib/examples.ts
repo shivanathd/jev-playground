@@ -306,7 +306,7 @@ export const EXAMPLES: ExampleSpec[] = [
     title: "Screenshot gate: ship or hold a UI change",
     shortTitle: "Screenshot",
     blurb:
-      "Attach a screenshot of the change. Jev 1.14 reads the image: ship or hold, error state or not, and a Box around the primary button. Needs jev-preview.",
+      "Attach a screenshot of the change. Jev 1.14 reads the image: ship or hold, error state or not, and a Box around the primary button. Needs jev-1.14.0.",
     stateHint:
       "Attach a PNG or JPEG below. Text here is extra context sent next to the image.",
     defaultState: {
@@ -342,8 +342,59 @@ export const EXAMPLES: ExampleSpec[] = [
     needsImage: true,
   },
   {
-    id: "primitives",
+    id: "returns",
     order: "09",
+    title: "Returns: refund, replace, repair or a person",
+    shortTitle: "Returns",
+    blurb:
+      "A return request with the customer's photo. Your code checks the return window and refund limit; Jev picks the outcome, checks the photo against the claim, and boxes the damage for the reviewer. Needs jev-1.14.0.",
+    stateHint:
+      "Attach the customer's photo below. The state carries the order, the policy, and what the customer wrote.",
+    defaultState: {
+      order: "Aria headphones, bought 12 days ago, $129",
+      policy: "30-day returns. Refunds up to $500 without a manager. Damage the customer caused is not covered.",
+      request: "The headband arrived cracked. Photo attached. I'd like a replacement.",
+    },
+    questions: {
+      outcome: {
+        type: "choice",
+        instructions:
+          "Given `order`, `policy`, `request` and the photo, how should this return be handled?",
+        criteria: {
+          refund: "Faulty, damaged in transit or not as described, and the customer wants their money back",
+          replace: "Faulty or damaged in transit, and the customer wants the same item again",
+          repair: "Fixable under warranty, or outside the window but still covered",
+          reject_policy: "Not covered: change of mind outside the window, or damage the customer caused",
+          human_review: "Unclear, disputed, or several requests at once",
+        },
+      },
+      damage_visible: {
+        type: "noul",
+        instructions: "The photo shows visible damage or a defect on the product.",
+        criteria: {
+          true: "Damage or a defect is visible",
+          false: "No damage or defect is visible",
+        },
+      },
+      matches_claim: {
+        type: "noul",
+        instructions: "The photo is consistent with the damage the customer describes in `request`.",
+        criteria: {
+          true: "The photo supports the claim",
+          false: "The photo does not support the claim",
+        },
+      },
+      damage_area: {
+        type: "box",
+        instructions: "The damaged or defective area of the product",
+      },
+    },
+    editableQuestions: false,
+    needsImage: true,
+  },
+  {
+    id: "primitives",
+    order: "10",
     title: "Primitives playground",
     shortTitle: "Primitives",
     blurb:

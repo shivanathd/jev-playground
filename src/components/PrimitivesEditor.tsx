@@ -71,7 +71,7 @@ export function PrimitivesEditor({ questions, onChange }: PrimitivesEditorProps)
                 <option value="choice">choice</option>
                 <option value="score">score</option>
                 <option value="noul">noul</option>
-                <option value="box">box (image, jev-preview)</option>
+                <option value="box">box (image, jev-1.14.0)</option>
               </select>
               <button
                 type="button"
