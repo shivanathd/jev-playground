@@ -23,7 +23,12 @@ export const ERRORS = {
   rateLimited: "TypeSafe rate-limited this key. Wait, then run the gate again.",
   overloaded: "TypeSafe is overloaded right now. Retry in a moment.",
   invalidState: "State must be valid JSON or a plain string.",
-  noQuestions: "Add at least one Choice, Score, or Noul question.",
+  noQuestions: "Add at least one Choice, Score, Noul, or Box question.",
+  badImage: "The attached image could not be read. Use a PNG or JPEG.",
+  imageTooLarge: "Images must be 4 MiB or smaller in this playground.",
+  imageNeedsPreview:
+    "Images and Box need jev-preview (Jev 1.14). Switch the model in Settings.",
+  boxNeedsImage: "Box questions locate something in an image. Attach one first.",
   badQuestion: "A question is missing a type, name, or criteria.",
   network: "The playground could not reach the TypeSafe proxy. Try again.",
   unknown: "The TypeSafe request failed. The key was not stored on the server.",

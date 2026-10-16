@@ -1,6 +1,7 @@
 import {
   APIError,
   AuthenticationError,
+  Image,
   RateLimitError,
   TypeSafeClient,
   TypeSafeError,
@@ -13,6 +14,11 @@ import { parseState } from "@/lib/state";
 import { DEFAULT_MODEL, type JevModel } from "@/lib/types";
 
 export const runtime = "nodejs";
+
+// Netlify caps function request bodies at 6 MB and base64 adds a third,
+// so the playground takes images up to 4 MiB (TypeSafe itself allows more).
+const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
+const IMAGE_OPT_IN = { "TypeSafe-Danger-Zone-Images": "true" } as const;
 
 const JSON_HEADERS = {
   "Content-Type": "application/json",
@@ -39,10 +45,28 @@ function readVisitorKey(request: Request): string {
 }
 
 function resolveModel(value: unknown): JevModel {
-  if (value === "jev-latest" || value === "jev-1.13.0") {
+  if (value === "jev-latest" || value === "jev-1.13.0" || value === "jev-preview") {
     return value;
   }
   return DEFAULT_MODEL;
+}
+
+function readImage(raw: unknown): Image | null {
+  if (raw === undefined || raw === null) {
+    return null;
+  }
+  const base64 =
+    typeof raw === "object" && "base64" in raw && typeof raw.base64 === "string"
+      ? raw.base64
+      : "";
+  if (!base64) {
+    throw new Error(ERRORS.badImage);
+  }
+  if (Math.floor((base64.length * 3) / 4) > MAX_IMAGE_BYTES) {
+    throw new Error(ERRORS.imageTooLarge);
+  }
+  // Throws TypeSafeError on bad base64; the API rejects anything but PNG/JPEG.
+  return Image.fromBase64(base64);
 }
 
 function publicApiError(error: unknown): { status: number; error: string } {
@@ -108,14 +132,20 @@ export async function POST(request: Request): Promise<Response> {
     model?: unknown;
     questions?: unknown;
     apiKey?: unknown;
+    image?: unknown;
   };
 
   // Visitor key comes from the header only. Ignore any key in the body.
   void body.apiKey;
 
   let questions;
+  let image: Image | null;
+  let hasBox: boolean;
   try {
-    questions = toSdkQuestions(parseQuestionMap(body.questions));
+    const map = parseQuestionMap(body.questions);
+    hasBox = Object.values(map).some((question) => question.type === "box");
+    questions = toSdkQuestions(map);
+    image = readImage(body.image);
   } catch (error) {
     const message =
       error instanceof Error ? error.message : ERRORS.badQuestion;
@@ -123,8 +153,22 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   const model = resolveModel(body.model);
-  const state: EntryType =
+  if ((image || hasBox) && model !== "jev-preview") {
+    return json(400, { error: ERRORS.imageNeedsPreview });
+  }
+  if (hasBox && !image) {
+    return json(400, { error: ERRORS.boxNeedsImage });
+  }
+
+  const textState: EntryType =
     typeof body.state === "string" ? parseState(body.state) : (body.state as EntryType) ?? null;
+  // The image rides alongside the text state so questions can use both.
+  // SDK 0.7 requires a non-null state, so an empty box sends "".
+  const state: NonNullable<EntryType> = image
+    ? textState === "" || textState === null
+      ? image
+      : { image, context: textState }
+    : (textState ?? "");
 
   // Explicit visitor key only. Never fall back to process.env.TYPESAFE_API_KEY.
   const client = new TypeSafeClient({
@@ -134,11 +178,10 @@ export async function POST(request: Request): Promise<Response> {
   });
 
   try {
-    const result = await client.systemOne({
-      state,
-      model,
-      questions,
-    });
+    const result = await client.systemOne(
+      { state, model, questions },
+      image ? { headers: IMAGE_OPT_IN } : undefined,
+    );
 
     return json(200, result);
   } catch (error) {

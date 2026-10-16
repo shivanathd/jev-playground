@@ -2,7 +2,8 @@ import type { EntryType as SdkEntryType } from "@typesafe-ai/sdk";
 
 export type EntryType = SdkEntryType;
 
-export type JevModel = "jev-1.13.0" | "jev-latest";
+// jev-preview is jev-1.14.0 today: the only model that takes images and Box.
+export type JevModel = "jev-1.13.0" | "jev-latest" | "jev-preview";
 
 export const DEFAULT_MODEL: JevModel = "jev-1.13.0";
 
@@ -14,6 +15,7 @@ export type ExampleId =
   | "slack-triage"
   | "publish-hold"
   | "recruiting"
+  | "screenshot-gate"
   | "primitives";
 
 export type ChoiceQuestionConfig = {
@@ -37,10 +39,16 @@ export type NoulQuestionConfig = {
   };
 };
 
+export type BoxQuestionConfig = {
+  type: "box";
+  instructions: string;
+};
+
 export type PlaygroundQuestion =
   | ChoiceQuestionConfig
   | ScoreQuestionConfig
-  | NoulQuestionConfig;
+  | NoulQuestionConfig
+  | BoxQuestionConfig;
 
 export type QuestionMap = Record<string, PlaygroundQuestion>;
 
@@ -64,7 +72,20 @@ export type NoulAnswer = {
   noul: number;
 };
 
-export type PlaygroundAnswer = ChoiceAnswer | ScoreAnswer | NoulAnswer;
+export type BoxAnswer = {
+  type: "box";
+  /** Edges as fractions of the image's height (top, bottom) and width (left, right). */
+  box: { top: number; bottom: number; left: number; right: number };
+  confidence: number | null;
+};
+
+export type PlaygroundAnswer = ChoiceAnswer | ScoreAnswer | NoulAnswer | BoxAnswer;
+
+/** One PNG or JPEG the visitor attached. Never stored server-side. */
+export type ImageInput = {
+  name: string;
+  base64: string;
+};
 
 export type SystemOneSuccess = {
   model: string;
@@ -79,6 +100,7 @@ export type SystemOnePayload = {
   state: EntryType;
   model: JevModel;
   questions: QuestionMap;
+  image?: ImageInput | null;
 };
 
 export type BranchTone = "go" | "hold" | "fail";
@@ -101,4 +123,6 @@ export type ExampleSpec = {
   defaultState: EntryType;
   questions: QuestionMap;
   editableQuestions: boolean;
+  /** Work order expects an attached image (and jev-preview). */
+  needsImage?: boolean;
 };
