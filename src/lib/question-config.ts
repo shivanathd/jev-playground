@@ -3,7 +3,9 @@ import type { PlaygroundQuestion, QuestionMap } from "@/lib/types";
 export type QuestionTypeName = PlaygroundQuestion["type"];
 
 export function isQuestionType(value: unknown): value is QuestionTypeName {
-  return value === "choice" || value === "score" || value === "noul";
+  return (
+    value === "choice" || value === "score" || value === "noul" || value === "box"
+  );
 }
 
 function asString(value: unknown): string {
@@ -81,7 +83,7 @@ export function parseQuestionMap(raw: unknown): QuestionMap {
 
     if (!isQuestionType(record.type)) {
       throw new Error(
-        `Question "${name}" needs type choice, score, or noul.`,
+        `Question "${name}" needs type choice, score, noul, or box.`,
       );
     }
 
@@ -109,6 +111,9 @@ export function parseQuestionMap(raw: unknown): QuestionMap {
           instructions,
           criteria: buildNoulCriteria(record.criteria),
         };
+        break;
+      case "box":
+        map[name] = { type: "box", instructions };
         break;
       default: {
         const exhaustive: never = record.type;
@@ -145,6 +150,11 @@ export function emptyQuestion(type: QuestionTypeName): PlaygroundQuestion {
           true: "The statement holds on this state",
           false: "The statement does not hold",
         },
+      };
+    case "box":
+      return {
+        type: "box",
+        instructions: "Locate the element described here in the image",
       };
     default: {
       const exhaustive: never = type;

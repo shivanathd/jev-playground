@@ -46,6 +46,7 @@ export function PrimitivesEditor({ questions, onChange }: PrimitivesEditorProps)
           <AddButton label="Add Choice" onClick={() => add("choice")} />
           <AddButton label="Add Score" onClick={() => add("score")} />
           <AddButton label="Add Noul" onClick={() => add("noul")} />
+          <AddButton label="Add Box" onClick={() => add("box")} />
         </div>
       </div>
 
@@ -70,6 +71,7 @@ export function PrimitivesEditor({ questions, onChange }: PrimitivesEditorProps)
                 <option value="choice">choice</option>
                 <option value="score">score</option>
                 <option value="noul">noul</option>
+                <option value="box">box (image, jev-preview)</option>
               </select>
               <button
                 type="button"
@@ -233,6 +235,13 @@ function CriteriaEditor({
             />
           </label>
         </div>
+      );
+    case "box":
+      return (
+        <p className="mt-3 font-mono text-[12px] text-muted">
+          No criteria. Jev returns one box around what the instructions describe in the
+          attached image.
+        </p>
       );
     default: {
       const exhaustive: never = question;

@@ -1,4 +1,5 @@
 import {
+  box,
   choice,
   noul,
   score,
@@ -77,6 +78,8 @@ export function toSdkQuestion(config: PlaygroundQuestion) {
       return score(config.instructions, buildScoreCriteria(config.criteria));
     case "noul":
       return noul(config.instructions, buildNoulCriteria(config.criteria));
+    case "box":
+      return box(config.instructions);
     default: {
       const exhaustive: never = config;
       throw new Error(`Unhandled question type: ${JSON.stringify(exhaustive)}`);

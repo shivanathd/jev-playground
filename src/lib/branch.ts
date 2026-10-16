@@ -1,4 +1,5 @@
 import type {
+  BoxAnswer,
   BranchDecision,
   ChoiceAnswer,
   ExampleId,
@@ -22,6 +23,10 @@ function isScore(answer: PlaygroundAnswer | undefined): answer is ScoreAnswer {
 
 function isNoul(answer: PlaygroundAnswer | undefined): answer is NoulAnswer {
   return answer?.type === "noul";
+}
+
+function isBox(answer: PlaygroundAnswer | undefined): answer is BoxAnswer {
+  return answer?.type === "box";
 }
 
 function snippet(lines: string[]): string {
@@ -96,6 +101,8 @@ export function decideBranch(
       return decidePublish(answers);
     case "recruiting":
       return decideRecruiting(answers);
+    case "screenshot-gate":
+      return decideScreenshot(answers);
     case "primitives":
       return decidePrimitives(answers);
     default: {
@@ -438,6 +445,43 @@ function decideRecruiting(
   return hold("hold", "Partial match. A recruiter should read it.", code);
 }
 
+function decideScreenshot(
+  answers: Record<string, PlaygroundAnswer>,
+): BranchDecision {
+  const ship = answers.ship;
+  const error = answers.shows_error;
+  const cta = answers.primary_cta;
+  const code = snippet([
+    "const { ship, shows_error, primary_cta } = response.answers;",
+    `if (ship.confidence < ${THIN_CONFIDENCE}) return humanReview(screenshot);`,
+    `if (shows_error.noul >= ${HIGH_NOUL}) return block(release);`,
+    "// Box is rough on Jev 1.14: use it to point a reviewer, never to auto-pass.",
+    "annotate(screenshot, primary_cta.box);",
+    "return apply(ship.choice);",
+  ]);
+
+  if (!isChoice(ship)) {
+    return failClosed("human_review", "Ship Choice missing. A human checks the screenshot.", code);
+  }
+  if (ship.confidence < THIN_CONFIDENCE) {
+    return failClosed(
+      "human_review",
+      `Ship confidence ${ship.confidence.toFixed(2)} is thin. A human checks the screenshot.`,
+      code,
+    );
+  }
+  if (isNoul(error) && error.noul >= HIGH_NOUL) {
+    return hold("block", `Error-state Noul is ${error.noul.toFixed(2)}. Do not ship this UI.`, code);
+  }
+  const ctaNote = isBox(cta)
+    ? ` CTA located at ${Math.round(cta.box.left * 100)}–${Math.round(cta.box.right * 100)}% across (confidence ${cta.confidence?.toFixed(2) ?? "n/a"}).`
+    : "";
+  if (ship.choice === "ship") {
+    return go("ship", `Choice is ship and no error state.${ctaNote}`, code);
+  }
+  return hold(ship.choice, `Choice is ${ship.choice}.${ctaNote}`, code);
+}
+
 function decidePrimitives(
   answers: Record<string, PlaygroundAnswer>,
 ): BranchDecision {
@@ -446,13 +490,13 @@ function decidePrimitives(
     if (answer.type === "noul") {
       return false;
     }
-    return answer.confidence < THIN_CONFIDENCE;
+    return (answer.confidence ?? 0) < THIN_CONFIDENCE;
   });
 
   if (thin) {
     return failClosed(
       "escalate",
-      `At least one Choice or Score is under ${THIN_CONFIDENCE}. Fail closed and escalate.`,
+      `At least one Choice, Score, or Box is under ${THIN_CONFIDENCE}. Fail closed and escalate.`,
       code,
     );
   }
@@ -465,6 +509,8 @@ function decidePrimitives(
         return `${name}=${answer.score.toFixed(2)}`;
       case "noul":
         return `${name}=${answer.noul.toFixed(2)}`;
+      case "box":
+        return `${name}=box`;
       default: {
         const exhaustive: never = answer;
         return String(exhaustive);

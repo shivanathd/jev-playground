@@ -1,5 +1,6 @@
 import { JsonBlock } from "@/components/JsonBlock";
 import type {
+  BoxAnswer,
   BranchDecision,
   PlaygroundAnswer,
   SystemOnePayload,
@@ -12,6 +13,7 @@ type ResultPanelProps = {
   request: SystemOnePayload | null;
   response: SystemOneSuccess | null;
   branch: BranchDecision | null;
+  imageUrl?: string | null;
 };
 
 export function ResultPanel({
@@ -20,6 +22,7 @@ export function ResultPanel({
   request,
   response,
   branch,
+  imageUrl = null,
 }: ResultPanelProps) {
   return (
     <section className="rounded-sm border border-line bg-panel p-4 md:p-5">
@@ -48,7 +51,7 @@ export function ResultPanel({
       {response ? (
         <div className="mt-5 grid gap-3">
           {Object.entries(response.answers).map(([name, answer]) => (
-            <AnswerCard key={name} name={name} answer={answer} />
+            <AnswerCard key={name} name={name} answer={answer} imageUrl={imageUrl} />
           ))}
           <p className="font-mono text-[12px] text-muted">
             model {response.model}
@@ -61,7 +64,7 @@ export function ResultPanel({
 
       {!running && !error && !response ? (
         <p className="text-sm leading-6 text-muted">
-          Run a gate to stamp Choice, Score, and Noul onto this slip. Empty or
+          Run a gate to stamp Choice, Score, Noul, and Box onto this slip. Empty or
           invalid keys fail loudly. Nothing is silent.
         </p>
       ) : null}
@@ -113,9 +116,11 @@ function BranchCard({ branch }: { branch: BranchDecision }) {
 function AnswerCard({
   name,
   answer,
+  imageUrl,
 }: {
   name: string;
   answer: PlaygroundAnswer;
+  imageUrl: string | null;
 }) {
   return (
     <article className="rounded-sm border border-line bg-panel-2 p-3">
@@ -125,12 +130,18 @@ function AnswerCard({
         </span>
         <span className="font-mono text-sm">{name}</span>
       </div>
-      <AnswerBody answer={answer} />
+      <AnswerBody answer={answer} imageUrl={imageUrl} />
     </article>
   );
 }
 
-function AnswerBody({ answer }: { answer: PlaygroundAnswer }) {
+function AnswerBody({
+  answer,
+  imageUrl,
+}: {
+  answer: PlaygroundAnswer;
+  imageUrl: string | null;
+}) {
   switch (answer.type) {
     case "choice":
       return (
@@ -180,11 +191,44 @@ function AnswerBody({ answer }: { answer: PlaygroundAnswer }) {
           </div>
         </div>
       );
+    case "box":
+      return <BoxBody answer={answer} imageUrl={imageUrl} />;
     default: {
       const exhaustive: never = answer;
       return exhaustive;
     }
   }
+}
+
+function BoxBody({ answer, imageUrl }: { answer: BoxAnswer; imageUrl: string | null }) {
+  const { top, bottom, left, right } = answer.box;
+  const pct = (value: number) => `${(Math.min(1, Math.max(0, value)) * 100).toFixed(1)}%`;
+  return (
+    <div>
+      <p className="font-mono text-sm text-paper">
+        top {top.toFixed(2)} · bottom {bottom.toFixed(2)} · left {left.toFixed(2)} · right{" "}
+        {right.toFixed(2)}
+        <span className="ml-2 text-muted">
+          confidence {answer.confidence === null ? "n/a" : answer.confidence.toFixed(3)}
+        </span>
+      </p>
+      {imageUrl ? (
+        <div className="relative mt-2 inline-block">
+          {/* eslint-disable-next-line @next/next/no-img-element -- local data: URL preview */}
+          <img src={imageUrl} alt="" className="max-h-72 rounded-sm" />
+          <span
+            className="absolute border-2 border-brass bg-brass/10"
+            style={{
+              top: pct(top),
+              left: pct(left),
+              height: pct(bottom - top),
+              width: pct(right - left),
+            }}
+          />
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 function ProbabilityBars({ values }: { values: Record<string, number> }) {

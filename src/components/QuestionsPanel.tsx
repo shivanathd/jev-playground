@@ -77,6 +77,12 @@ function CriteriaList({ question }: { question: PlaygroundQuestion }) {
           ) : null}
         </ul>
       ) : null;
+    case "box":
+      return (
+        <p className="mt-2 font-mono text-[12px] text-muted">
+          box · one region of the attached image, edges as fractions
+        </p>
+      );
     default: {
       const exhaustive: never = question;
       return exhaustive;

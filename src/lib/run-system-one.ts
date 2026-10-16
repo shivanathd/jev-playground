@@ -1,6 +1,7 @@
 import { ERRORS } from "@/lib/copy";
 import { messageForStatus, PlaygroundError } from "@/lib/errors";
 import type {
+  ImageInput,
   JevModel,
   QuestionMap,
   SystemOnePayload,
@@ -21,6 +22,7 @@ export async function runSystemOne(args: {
   model: JevModel;
   state: SystemOnePayload["state"];
   questions: QuestionMap;
+  image?: ImageInput | null;
 }): Promise<RunResult> {
   const key = args.apiKey.trim();
   if (!key) {
@@ -35,6 +37,7 @@ export async function runSystemOne(args: {
     state: args.state,
     model: args.model,
     questions: args.questions,
+    image: args.image ?? null,
   };
 
   let response: Response;
@@ -70,7 +73,19 @@ export async function runSystemOne(args: {
   }
 
   return {
-    request,
+    request: forDisplay(request),
     response: body as SystemOneSuccess,
+  };
+}
+
+/** The request as shown on the slip: a short label instead of the image's base64. */
+export function forDisplay(request: SystemOnePayload): SystemOnePayload {
+  if (!request.image) {
+    return request;
+  }
+  const kb = Math.round((request.image.base64.length * 3) / 4 / 1024);
+  return {
+    ...request,
+    image: { name: request.image.name, base64: `<${kb} KB, sent as an image asset>` },
   };
 }

@@ -78,7 +78,7 @@ export function loadModel(): JevModel {
   }
 
   const stored = window.sessionStorage.getItem(MODEL_KEY);
-  if (stored === "jev-1.13.0" || stored === "jev-latest") {
+  if (stored === "jev-1.13.0" || stored === "jev-latest" || stored === "jev-preview") {
     return stored;
   }
 

@@ -301,8 +301,49 @@ export const EXAMPLES: ExampleSpec[] = [
     editableQuestions: false,
   },
   {
-    id: "primitives",
+    id: "screenshot-gate",
     order: "08",
+    title: "Screenshot gate: ship or hold a UI change",
+    shortTitle: "Screenshot",
+    blurb:
+      "Attach a screenshot of the change. Jev 1.14 reads the image: ship or hold, error state or not, and a Box around the primary button. Needs jev-preview.",
+    stateHint:
+      "Attach a PNG or JPEG below. Text here is extra context sent next to the image.",
+    defaultState: {
+      change: "New checkout page: single primary 'Pay now' button, no error banners expected.",
+      release: "production",
+    },
+    questions: {
+      ship: {
+        type: "choice",
+        instructions:
+          "Given `context`, should this UI screenshot ship to production as it looks?",
+        criteria: {
+          ship: "Looks complete and correct for the described change",
+          hold: "Something looks off or unfinished. Fix first.",
+          human_review: "Cannot tell from the screenshot. A person should look.",
+        },
+      },
+      shows_error: {
+        type: "noul",
+        instructions:
+          "The screenshot shows an error state: error banner, stack trace, broken layout, or placeholder text.",
+        criteria: {
+          true: "An error, broken layout, or placeholder is visible",
+          false: "No error state is visible",
+        },
+      },
+      primary_cta: {
+        type: "box",
+        instructions: "The primary call-to-action button",
+      },
+    },
+    editableQuestions: false,
+    needsImage: true,
+  },
+  {
+    id: "primitives",
+    order: "09",
     title: "Primitives playground",
     shortTitle: "Primitives",
     blurb:

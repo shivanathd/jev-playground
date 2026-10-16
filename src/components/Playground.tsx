@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useSyncExternalStore } from "react";
+import { ImagePanel, type AttachedImage } from "@/components/ImagePanel";
 import { PrimitivesEditor } from "@/components/PrimitivesEditor";
 import { QuestionsPanel } from "@/components/QuestionsPanel";
 import { ResultPanel } from "@/components/ResultPanel";
@@ -12,7 +13,7 @@ import { ACCESS, SITE } from "@/lib/copy";
 import { PlaygroundError } from "@/lib/errors";
 import { EXAMPLES, exampleById } from "@/lib/examples";
 import { formatState, parseState } from "@/lib/state";
-import { runSystemOne } from "@/lib/run-system-one";
+import { forDisplay, runSystemOne } from "@/lib/run-system-one";
 import {
   loadKeyStore,
   loadModel,
@@ -76,6 +77,8 @@ export function Playground() {
   const [request, setRequest] = useState<SystemOnePayload | null>(null);
   const [response, setResponse] = useState<SystemOneSuccess | null>(null);
   const [branch, setBranch] = useState<BranchDecision | null>(null);
+  const [image, setImage] = useState<AttachedImage | null>(null);
+  const hasBox = Object.values(questions).some((question) => question.type === "box");
 
   const example = useMemo(() => exampleById(activeId), [activeId]);
 
@@ -88,6 +91,7 @@ export function Playground() {
     setRequest(null);
     setResponse(null);
     setBranch(null);
+    setImage(null);
   }
 
   function handleKeyChange(value: string) {
@@ -118,17 +122,21 @@ export function Playground() {
         model,
         state: parseState(stateText),
         questions,
+        image,
       });
       setRequest(result.request);
       setResponse(result.response);
       setBranch(decideBranch(activeId, result.response.answers));
     } catch (caught) {
       setResponse(null);
-      setRequest({
-        state: parseState(stateText),
-        model,
-        questions,
-      });
+      setRequest(
+        forDisplay({
+          state: parseState(stateText),
+          model,
+          questions,
+          image,
+        }),
+      );
       if (caught instanceof PlaygroundError) {
         setError(caught.message);
       } else if (caught instanceof Error) {
@@ -189,7 +197,7 @@ export function Playground() {
         <main className="grid min-w-0 gap-5">
           <section className="rounded-sm border border-line bg-panel-2 px-4 py-3">
             <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-brass">
-              {example.order} / 08
+              {example.order} / {String(EXAMPLES.length).padStart(2, "0")}
             </p>
             <h2 className="mt-1 font-display text-2xl tracking-tight">
               {example.title}
@@ -204,6 +212,19 @@ export function Playground() {
             value={stateText}
             onChange={setStateText}
           />
+
+          {example.needsImage || example.editableQuestions || image ? (
+            <ImagePanel
+              image={image}
+              model={model}
+              needsImage={Boolean(example.needsImage) || hasBox}
+              onChange={(next) => {
+                setImage(next);
+                setError(null);
+              }}
+              onError={setError}
+            />
+          ) : null}
 
           {example.editableQuestions ? (
             <PrimitivesEditor questions={questions} onChange={setQuestions} />
@@ -239,6 +260,7 @@ export function Playground() {
             request={request}
             response={response}
             branch={branch}
+            imageUrl={image?.url ?? null}
           />
         </main>
       </div>

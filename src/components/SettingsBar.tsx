@@ -75,6 +75,13 @@ export function SettingsBar({
               hint="moves"
               testId="model-latest"
             />
+            <ModelButton
+              active={model === "jev-preview"}
+              onClick={() => onModelChange("jev-preview")}
+              label="jev-preview"
+              hint="1.14 · images"
+              testId="model-preview"
+            />
           </div>
         </fieldset>
       </form>
