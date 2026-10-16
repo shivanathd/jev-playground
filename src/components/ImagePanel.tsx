@@ -79,13 +79,26 @@ export function ImagePanel({ image, model, needsImage, onChange, onError }: Imag
           </div>
         </div>
       ) : (
-        <input
-          type="file"
-          accept="image/png,image/jpeg"
-          data-testid="image-input"
-          onChange={(event) => handleFile(event.target.files?.[0])}
-          className="block text-sm"
-        />
+        <label
+          onDragOver={(event) => event.preventDefault()}
+          onDrop={(event) => {
+            event.preventDefault();
+            handleFile(event.dataTransfer.files[0]);
+          }}
+          className="flex cursor-pointer flex-col items-center gap-2 rounded-sm border border-dashed border-paper-ink/30 px-4 py-6 text-center text-sm hover:border-paper-ink/60"
+        >
+          <span className="rounded-sm border border-paper-ink/25 px-3 py-1 font-mono text-[11px] uppercase tracking-wider">
+            Upload image
+          </span>
+          <span className="text-paper-ink/60">or drop a PNG or JPEG here</span>
+          <input
+            type="file"
+            accept="image/png,image/jpeg"
+            data-testid="image-input"
+            onChange={(event) => handleFile(event.target.files?.[0])}
+            className="sr-only"
+          />
+        </label>
       )}
     </section>
   );
