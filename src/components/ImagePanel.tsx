@@ -85,7 +85,7 @@ export function ImagePanel({ image, model, needsImage, onChange, onError }: Imag
             event.preventDefault();
             handleFile(event.dataTransfer.files[0]);
           }}
-          className="flex cursor-pointer flex-col items-center gap-2 rounded-sm border border-dashed border-paper-ink/30 px-4 py-6 text-center text-sm hover:border-paper-ink/60"
+          className="flex cursor-pointer flex-col items-center gap-2 rounded-sm border border-dashed border-paper-ink/30 px-4 py-6 text-center text-sm hover:border-paper-ink/60 focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-paper-ink/60"
         >
           <span className="rounded-sm border border-paper-ink/25 px-3 py-1 font-mono text-[11px] uppercase tracking-wider">
             Upload image
