@@ -22,7 +22,7 @@ This app is a set of operator work orders:
 6. Publish vs hold on agent output
 7. Recruiting screen (bounded; never auto-reject on low confidence)
 8. Screenshot gate (image in: ship / hold, error-state Noul, Box around the primary button; needs `jev-1.14.0`)
-9. Returns (image in: refund / replace / repair / reject / person, photo-vs-claim Noul, Box around the damage; needs `jev-1.14.0`)
+9. Returns (image in: `refund` / `replace` / `repair` / `reject_policy` / `human_review`, photo-vs-claim Noul, Box around the damage; needs `jev-1.14.0`)
 10. Primitives playground (freeform state + mix Choice / Score / Noul / Box)
 
 Each run shows state in, question config, live answers with probabilities and confidence, a suggested code branch, and the request/response JSON.
