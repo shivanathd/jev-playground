@@ -46,16 +46,16 @@ export function ImagePanel({ image, model, needsImage, onChange, onError }: Imag
       <div className="mb-3 flex items-baseline justify-between gap-3">
         <h2 className="font-display text-xl tracking-tight">Image in</h2>
         <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-paper-ink/50">
-          {needsImage ? "required" : "optional"} · jev-preview
+          {needsImage ? "required" : "optional"} · jev-1.14.0
         </span>
       </div>
       <p className="mb-3 text-sm leading-6 text-paper-ink/70">
         One PNG or JPEG, up to 4 MiB. Sent to TypeSafe with this run only, never stored. Images
         are experimental in Jev 1.14 and less reliable than text: ask focused questions.
       </p>
-      {image && model !== "jev-preview" ? (
+      {image && model !== "jev-1.14.0" ? (
         <p className="mb-3 text-sm leading-6 text-fail">
-          Images need jev-preview. Switch the model in Settings.
+          Images need jev-1.14.0. Switch the model in Settings.
         </p>
       ) : null}
       {image ? (

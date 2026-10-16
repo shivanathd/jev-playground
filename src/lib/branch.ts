@@ -103,6 +103,8 @@ export function decideBranch(
       return decideRecruiting(answers);
     case "screenshot-gate":
       return decideScreenshot(answers);
+    case "returns":
+      return decideReturns(answers);
     case "primitives":
       return decidePrimitives(answers);
     default: {
@@ -480,6 +482,54 @@ function decideScreenshot(
     return go("ship", `Choice is ship and no error state.${ctaNote}`, code);
   }
   return hold(ship.choice, `Choice is ${ship.choice}.${ctaNote}`, code);
+}
+
+const LOW_NOUL = 0.3;
+
+function decideReturns(
+  answers: Record<string, PlaygroundAnswer>,
+): BranchDecision {
+  const outcome = answers.outcome;
+  const visible = answers.damage_visible;
+  const matches = answers.matches_claim;
+  const area = answers.damage_area;
+  const code = snippet([
+    "// The return window and refund limit are checked in code before Jev is asked.",
+    "const { outcome, damage_visible, matches_claim, damage_area } = response.answers;",
+    `if (outcome.confidence < ${THIN_CONFIDENCE}) return assignHuman(returnCase);`,
+    `if (matches_claim.noul < ${LOW_NOUL}) return assignHuman(returnCase); // photo contradicts the claim`,
+    `if (["refund", "replace"].includes(outcome.choice) && damage_visible.noul < ${LOW_NOUL}) return assignHuman(returnCase);`,
+    "annotate(photo, damage_area.box); // for the reviewer, never to approve",
+    "return apply(outcome.choice);",
+  ]);
+
+  if (!isChoice(outcome)) {
+    return failClosed("human_review", "Outcome Choice missing. A person handles the return.", code);
+  }
+  if (outcome.confidence < THIN_CONFIDENCE) {
+    return failClosed(
+      "human_review",
+      `Outcome confidence ${outcome.confidence.toFixed(2)} is thin. A person handles the return.`,
+      code,
+    );
+  }
+  if (!isNoul(matches) || matches.noul < LOW_NOUL) {
+    return hold(
+      "human_review",
+      `The photo does not support the claim (Noul ${isNoul(matches) ? matches.noul.toFixed(2) : "missing"}). A person checks it.`,
+      code,
+    );
+  }
+  if ((outcome.choice === "refund" || outcome.choice === "replace") && (!isNoul(visible) || visible.noul < LOW_NOUL)) {
+    return hold("human_review", `Choice is ${outcome.choice} but no damage is visible in the photo. A person checks it.`, code);
+  }
+  const areaNote = isBox(area)
+    ? ` Damage boxed at ${Math.round(area.box.top * 100)}–${Math.round(area.box.bottom * 100)}% down, ${Math.round(area.box.left * 100)}–${Math.round(area.box.right * 100)}% across.`
+    : "";
+  if (outcome.choice === "human_review") {
+    return hold("human_review", `Choice is human_review.${areaNote}`, code);
+  }
+  return go(outcome.choice, `Choice is ${outcome.choice} and the photo supports the claim.${areaNote}`, code);
 }
 
 function decidePrimitives(

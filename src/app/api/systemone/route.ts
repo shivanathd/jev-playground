@@ -45,7 +45,7 @@ function readVisitorKey(request: Request): string {
 }
 
 function resolveModel(value: unknown): JevModel {
-  if (value === "jev-latest" || value === "jev-1.13.0" || value === "jev-preview") {
+  if (value === "jev-latest" || value === "jev-1.13.0" || value === "jev-1.14.0") {
     return value;
   }
   return DEFAULT_MODEL;
@@ -153,8 +153,8 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   const model = resolveModel(body.model);
-  if ((image || hasBox) && model !== "jev-preview") {
-    return json(400, { error: ERRORS.imageNeedsPreview });
+  if ((image || hasBox) && model !== "jev-1.14.0") {
+    return json(400, { error: ERRORS.imageNeedsJev114 });
   }
   if (hasBox && !image) {
     return json(400, { error: ERRORS.boxNeedsImage });

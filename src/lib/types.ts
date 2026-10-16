@@ -2,8 +2,8 @@ import type { EntryType as SdkEntryType } from "@typesafe-ai/sdk";
 
 export type EntryType = SdkEntryType;
 
-// jev-preview is jev-1.14.0 today: the only model that takes images and Box.
-export type JevModel = "jev-1.13.0" | "jev-latest" | "jev-preview";
+// jev-1.14.0 is the pinned model that takes images and Box. jev-latest is still 1.13.
+export type JevModel = "jev-1.13.0" | "jev-latest" | "jev-1.14.0";
 
 export const DEFAULT_MODEL: JevModel = "jev-1.13.0";
 
@@ -16,6 +16,7 @@ export type ExampleId =
   | "publish-hold"
   | "recruiting"
   | "screenshot-gate"
+  | "returns"
   | "primitives";
 
 export type ChoiceQuestionConfig = {
@@ -123,6 +124,6 @@ export type ExampleSpec = {
   defaultState: EntryType;
   questions: QuestionMap;
   editableQuestions: boolean;
-  /** Work order expects an attached image (and jev-preview). */
+  /** Work order expects an attached image (and jev-1.14.0). */
   needsImage?: boolean;
 };

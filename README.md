@@ -21,8 +21,9 @@ This app is a set of operator work orders:
 5. Slack triage (interrupt vs digest)
 6. Publish vs hold on agent output
 7. Recruiting screen (bounded; never auto-reject on low confidence)
-8. Screenshot gate (image in: ship / hold, error-state Noul, Box around the primary button; needs `jev-preview`)
-9. Primitives playground (freeform state + mix Choice / Score / Noul / Box)
+8. Screenshot gate (image in: ship / hold, error-state Noul, Box around the primary button; needs `jev-1.14.0`)
+9. Returns (image in: `refund` / `replace` / `repair` / `reject_policy` / `human_review`, photo-vs-claim Noul, Box around the damage; needs `jev-1.14.0`)
+10. Primitives playground (freeform state + mix Choice / Score / Noul / Box)
 
 Each run shows state in, question config, live answers with probabilities and confidence, a suggested code branch, and the request/response JSON.
 
@@ -50,7 +51,7 @@ npm i
 npm run dev
 ```
 
-Open http://localhost:3000. Paste a TypeSafe key in Settings. Default model is `jev-1.13.0` (toggle `jev-latest` for the moving alias, or `jev-preview` for Jev 1.14 with images and Box).
+Open http://localhost:3000. Paste a TypeSafe key in Settings. Default model is `jev-1.13.0` (toggle `jev-latest` for the moving alias, or the pinned `jev-1.14.0` for images and Box).
 
 ```bash
 pnpm build
@@ -107,10 +108,10 @@ const response = await client.systemOne({
 
 ## Images and Box (Jev 1.14)
 
-Jev 1.14 (`jev-preview` since 14 Oct 2026) reads PNG and JPEG images and adds a **Box** output: one region of the image, as top / bottom / left / right fractions plus a confidence.
+Jev 1.14 (pinned as `jev-1.14.0`; `jev-latest` is still 1.13) reads PNG and JPEG images and adds a **Box** output: one region of the image, as top / bottom / left / right fractions plus a confidence.
 
 - Attach one image per run in the **Image in** panel. The proxy turns it into an SDK `Image` and sends TypeSafe's experimental opt-in header `TypeSafe-Danger-Zone-Images: true`. Images are never stored.
-- Images and Box only work on `jev-preview`. The proxy returns a clear 400 for an image on 1.13 or a Box question without an image.
+- Images and Box only work on `jev-1.14.0`. The proxy returns a clear 400 for an image on 1.13 or a Box question without an image.
 - The playground caps images at 4 MiB because Netlify limits function request bodies to 6 MB and base64 adds a third.
 - TypeSafe calls image reasoning experimental and less reliable than text. Ask focused questions, and treat a Box as a pointer for a reviewer, not an auto-pass.
 
