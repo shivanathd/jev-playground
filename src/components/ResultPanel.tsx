@@ -222,19 +222,22 @@ function BoxBody({ answer, imageUrl }: { answer: BoxAnswer; imageUrl: string | n
           nothing. Ask a Noul about whether it is there.
         </p>
       ) : null}
-      {imageUrl && found ? (
+      {imageUrl ? (
         <div className="relative mt-2 inline-block">
           {/* eslint-disable-next-line @next/next/no-img-element -- local data: URL preview */}
           <img src={imageUrl} alt="" className="max-h-72 rounded-sm" />
-          <span
-            className="absolute border-2 border-brass bg-brass/10"
-            style={{
-              top: pct(top),
-              left: pct(left),
-              height: pct(bottom - top),
-              width: pct(right - left),
-            }}
-          />
+          {found ? (
+            <span
+              data-testid="box-overlay"
+              className="absolute border-2 border-brass bg-brass/10"
+              style={{
+                top: pct(top),
+                left: pct(left),
+                height: pct(bottom - top),
+                width: pct(right - left),
+              }}
+            />
+          ) : null}
         </div>
       ) : null}
     </div>
