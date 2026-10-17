@@ -200,9 +200,13 @@ function AnswerBody({
   }
 }
 
+// A Box answer is always a box, even when nothing is there. Below this confidence, treat it as not found.
+const BOX_FOUND = 0.5;
+
 function BoxBody({ answer, imageUrl }: { answer: BoxAnswer; imageUrl: string | null }) {
   const { top, bottom, left, right } = answer.box;
   const pct = (value: number) => `${(Math.min(1, Math.max(0, value)) * 100).toFixed(1)}%`;
+  const found = answer.confidence !== null && answer.confidence >= BOX_FOUND;
   return (
     <div>
       <p className="font-mono text-sm text-paper">
@@ -212,19 +216,28 @@ function BoxBody({ answer, imageUrl }: { answer: BoxAnswer; imageUrl: string | n
           confidence {answer.confidence === null ? "n/a" : answer.confidence.toFixed(3)}
         </span>
       </p>
+      {!found ? (
+        <p className="mt-1 text-sm text-muted" data-testid="box-not-found">
+          Not found: confidence is under {BOX_FOUND}. Jev always returns a box, so a low-confidence box marks
+          nothing. Ask a Noul about whether it is there.
+        </p>
+      ) : null}
       {imageUrl ? (
         <div className="relative mt-2 inline-block">
           {/* eslint-disable-next-line @next/next/no-img-element -- local data: URL preview */}
           <img src={imageUrl} alt="" className="max-h-72 rounded-sm" />
-          <span
-            className="absolute border-2 border-brass bg-brass/10"
-            style={{
-              top: pct(top),
-              left: pct(left),
-              height: pct(bottom - top),
-              width: pct(right - left),
-            }}
-          />
+          {found ? (
+            <span
+              data-testid="box-overlay"
+              className="absolute border-2 border-brass bg-brass/10"
+              style={{
+                top: pct(top),
+                left: pct(left),
+                height: pct(bottom - top),
+                width: pct(right - left),
+              }}
+            />
+          ) : null}
         </div>
       ) : null}
     </div>

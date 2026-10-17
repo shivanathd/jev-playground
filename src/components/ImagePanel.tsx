@@ -9,6 +9,9 @@ export type AttachedImage = {
 
 // Matches the proxy cap in /api/systemone (Netlify's 6 MB body limit minus base64 overhead).
 const MAX_BYTES = 4 * 1024 * 1024;
+// TypeSafe rejects images with a side outside this range (measured 2026-10-17).
+const MIN_SIDE = 280;
+const MAX_SIDE = 1568;
 const TYPES = ["image/png", "image/jpeg"];
 
 type ImagePanelProps = {
@@ -35,7 +38,17 @@ export function ImagePanel({ image, model, needsImage, onChange, onError }: Imag
     const reader = new FileReader();
     reader.onload = () => {
       const url = String(reader.result);
-      onChange({ name: file.name, base64: url.slice(url.indexOf(",") + 1), url });
+      const img = new Image();
+      img.onload = () => {
+        const { naturalWidth: w, naturalHeight: h } = img;
+        if (Math.min(w, h) < MIN_SIDE || Math.max(w, h) > MAX_SIDE) {
+          onError(`Jev needs each side between ${MIN_SIDE} and ${MAX_SIDE} px. This image is ${w}×${h}.`);
+          return;
+        }
+        onChange({ name: file.name, base64: url.slice(url.indexOf(",") + 1), url });
+      };
+      img.onerror = () => onError("The image could not be read.");
+      img.src = url;
     };
     reader.onerror = () => onError("The image could not be read.");
     reader.readAsDataURL(file);
@@ -50,7 +63,7 @@ export function ImagePanel({ image, model, needsImage, onChange, onError }: Imag
         </span>
       </div>
       <p className="mb-3 text-sm leading-6 text-paper-ink/70">
-        One PNG or JPEG, up to 4 MiB. Sent to TypeSafe with this run only, never stored. Images
+        One PNG or JPEG, up to 4 MiB, each side 280–1568 px. Sent to TypeSafe with this run only, never stored. Images
         are experimental in Jev 1.14 and less reliable than text: ask focused questions.
       </p>
       {image && model !== "jev-1.14.0" ? (
