@@ -111,7 +111,8 @@ const response = await client.systemOne({
 Jev 1.14 (pinned as `jev-1.14.0`; `jev-latest` is still 1.13) reads PNG and JPEG images and adds a **Box** output: one region of the image, as top / bottom / left / right fractions plus a confidence.
 
 - Attach one image per run in the **Image in** panel. The proxy turns it into an SDK `Image` and sends TypeSafe's experimental opt-in header `TypeSafe-Danger-Zone-Images: true`. Images are never stored.
-- Images and Box only work on `jev-1.14.0`. The proxy returns a clear 400 for an image on 1.13 or a Box question without an image.
+- Images and Box only work on `jev-1.14.0`. Each side must be 280–1568 px; the page refuses other sizes before sending.
+- A Box answer is always a box, even when nothing is there. The page draws it only at confidence 0.5 or above, and the branch notes ignore weaker ones. Pair every Box with a Noul that asks whether the thing is there. The proxy returns a clear 400 for an image on 1.13 or a Box question without an image.
 - The playground caps images at 4 MiB because Netlify limits function request bodies to 6 MB and base64 adds a third.
 - TypeSafe calls image reasoning experimental and less reliable than text. Ask focused questions, and treat a Box as a pointer for a reviewer, not an auto-pass.
 

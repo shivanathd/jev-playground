@@ -29,6 +29,11 @@ function isBox(answer: PlaygroundAnswer | undefined): answer is BoxAnswer {
   return answer?.type === "box";
 }
 
+/** A Box answer is always a box; only a confident one marks something that is there. */
+function foundBox(answer: PlaygroundAnswer | undefined): answer is BoxAnswer {
+  return isBox(answer) && (answer.confidence ?? 0) >= 0.5;
+}
+
 function snippet(lines: string[]): string {
   return lines.join("\n");
 }
@@ -475,7 +480,7 @@ function decideScreenshot(
   if (isNoul(error) && error.noul >= HIGH_NOUL) {
     return hold("block", `Error-state Noul is ${error.noul.toFixed(2)}. Do not ship this UI.`, code);
   }
-  const ctaNote = isBox(cta)
+  const ctaNote = foundBox(cta)
     ? ` CTA located at ${Math.round(cta.box.left * 100)}–${Math.round(cta.box.right * 100)}% across (confidence ${cta.confidence?.toFixed(2) ?? "n/a"}).`
     : "";
   if (ship.choice === "ship") {
@@ -523,7 +528,7 @@ function decideReturns(
   if ((outcome.choice === "refund" || outcome.choice === "replace") && (!isNoul(visible) || visible.noul < LOW_NOUL)) {
     return hold("human_review", `Choice is ${outcome.choice} but no damage is visible in the photo. A person checks it.`, code);
   }
-  const areaNote = isBox(area)
+  const areaNote = foundBox(area)
     ? ` Damage boxed at ${Math.round(area.box.top * 100)}–${Math.round(area.box.bottom * 100)}% down, ${Math.round(area.box.left * 100)}–${Math.round(area.box.right * 100)}% across.`
     : "";
   if (outcome.choice === "human_review") {
