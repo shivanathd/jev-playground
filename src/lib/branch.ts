@@ -522,7 +522,7 @@ function decideReturns(
     `if (outcome.confidence < ${THIN_CONFIDENCE}) return assignHuman(returnCase);`,
     `if (matches_claim.noul < ${LOW_NOUL}) return assignHuman(returnCase); // photo contradicts the claim`,
     `if (["refund", "replace"].includes(outcome.choice) && damage_visible.noul < ${LOW_NOUL}) return assignHuman(returnCase);`,
-    "if (damage_visible.noul >= 0.5) annotate(photo, damage_area.box); // for the reviewer, never to approve",
+    "if (damage_visible?.noul >= 0.5) annotate(photo, damage_area.box); // for the reviewer, never to approve",
     "return apply(outcome.choice);",
   ]);
 
