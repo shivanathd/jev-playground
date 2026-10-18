@@ -29,9 +29,26 @@ function isBox(answer: PlaygroundAnswer | undefined): answer is BoxAnswer {
   return answer?.type === "box";
 }
 
-/** A Box answer is always a box; only a confident one marks something that is there. */
-function foundBox(answer: PlaygroundAnswer | undefined): answer is BoxAnswer {
-  return isBox(answer) && (answer.confidence ?? 0) >= 0.5;
+/**
+ * A Box answer is always a box, even when nothing is there. With a gate Noul, that Noul decides whether the
+ * thing is there: box confidence alone is a poor signal, and correct boxes on real photos often score 0.2 to 0.5.
+ * Without a gate, only a confident box counts.
+ */
+export function boxFound(
+  answers: Record<string, PlaygroundAnswer>,
+  key: string,
+  gates: Record<string, string> = {},
+): boolean {
+  const box = answers[key];
+  if (!isBox(box)) {
+    return false;
+  }
+  const gate = gates[key];
+  if (gate) {
+    const present = answers[gate];
+    return isNoul(present) && present.noul >= 0.5;
+  }
+  return (box.confidence ?? 0) >= 0.5;
 }
 
 function snippet(lines: string[]): string {
@@ -480,7 +497,7 @@ function decideScreenshot(
   if (isNoul(error) && error.noul >= HIGH_NOUL) {
     return hold("block", `Error-state Noul is ${error.noul.toFixed(2)}. Do not ship this UI.`, code);
   }
-  const ctaNote = foundBox(cta)
+  const ctaNote = isBox(cta) && boxFound(answers, "primary_cta")
     ? ` CTA located at ${Math.round(cta.box.left * 100)}–${Math.round(cta.box.right * 100)}% across (confidence ${cta.confidence?.toFixed(2) ?? "n/a"}).`
     : "";
   if (ship.choice === "ship") {
@@ -504,7 +521,7 @@ function decideReturns(
     `if (outcome.confidence < ${THIN_CONFIDENCE}) return assignHuman(returnCase);`,
     `if (matches_claim.noul < ${LOW_NOUL}) return assignHuman(returnCase); // photo contradicts the claim`,
     `if (["refund", "replace"].includes(outcome.choice) && damage_visible.noul < ${LOW_NOUL}) return assignHuman(returnCase);`,
-    "annotate(photo, damage_area.box); // for the reviewer, never to approve",
+    "if (damage_visible.noul >= 0.5) annotate(photo, damage_area.box); // for the reviewer, never to approve",
     "return apply(outcome.choice);",
   ]);
 
@@ -528,7 +545,7 @@ function decideReturns(
   if ((outcome.choice === "refund" || outcome.choice === "replace") && (!isNoul(visible) || visible.noul < LOW_NOUL)) {
     return hold("human_review", `Choice is ${outcome.choice} but no damage is visible in the photo. A person checks it.`, code);
   }
-  const areaNote = foundBox(area)
+  const areaNote = isBox(area) && boxFound(answers, "damage_area", { damage_area: "damage_visible" })
     ? ` Damage boxed at ${Math.round(area.box.top * 100)}–${Math.round(area.box.bottom * 100)}% down, ${Math.round(area.box.left * 100)}–${Math.round(area.box.right * 100)}% across.`
     : "";
   if (outcome.choice === "human_review") {

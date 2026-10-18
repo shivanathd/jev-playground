@@ -389,6 +389,7 @@ export const EXAMPLES: ExampleSpec[] = [
         instructions: "The damaged or defective area of the product",
       },
     },
+    boxGates: { damage_area: "damage_visible" },
     editableQuestions: false,
     needsImage: true,
   },
