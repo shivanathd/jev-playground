@@ -126,4 +126,6 @@ export type ExampleSpec = {
   editableQuestions: boolean;
   /** Work order expects an attached image (and jev-1.14.0). */
   needsImage?: boolean;
+  /** Box key -> the Noul that says whether the thing is there (Gavel's Box_Gate__c). */
+  boxGates?: Record<string, string>;
 };

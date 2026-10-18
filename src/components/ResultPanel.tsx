@@ -1,4 +1,5 @@
 import { JsonBlock } from "@/components/JsonBlock";
+import { boxFound } from "@/lib/branch";
 import type {
   BoxAnswer,
   BranchDecision,
@@ -14,6 +15,7 @@ type ResultPanelProps = {
   response: SystemOneSuccess | null;
   branch: BranchDecision | null;
   imageUrl?: string | null;
+  boxGates?: Record<string, string>;
 };
 
 export function ResultPanel({
@@ -23,6 +25,7 @@ export function ResultPanel({
   response,
   branch,
   imageUrl = null,
+  boxGates = {},
 }: ResultPanelProps) {
   return (
     <section className="rounded-sm border border-line bg-panel p-4 md:p-5">
@@ -51,7 +54,14 @@ export function ResultPanel({
       {response ? (
         <div className="mt-5 grid gap-3">
           {Object.entries(response.answers).map(([name, answer]) => (
-            <AnswerCard key={name} name={name} answer={answer} imageUrl={imageUrl} />
+            <AnswerCard
+              key={name}
+              name={name}
+              answer={answer}
+              imageUrl={imageUrl}
+              found={boxFound(response.answers, name, boxGates)}
+              gate={boxGates[name] ?? null}
+            />
           ))}
           <p className="font-mono text-[12px] text-muted">
             model {response.model}
@@ -113,15 +123,19 @@ function BranchCard({ branch }: { branch: BranchDecision }) {
   );
 }
 
+type BoxView = { found: boolean; gate: string | null };
+
 function AnswerCard({
   name,
   answer,
   imageUrl,
+  found,
+  gate,
 }: {
   name: string;
   answer: PlaygroundAnswer;
   imageUrl: string | null;
-}) {
+} & BoxView) {
   return (
     <article className="rounded-sm border border-line bg-panel-2 p-3">
       <div className="mb-2 flex items-center gap-2">
@@ -130,7 +144,7 @@ function AnswerCard({
         </span>
         <span className="font-mono text-sm">{name}</span>
       </div>
-      <AnswerBody answer={answer} imageUrl={imageUrl} />
+      <AnswerBody answer={answer} imageUrl={imageUrl} found={found} gate={gate} />
     </article>
   );
 }
@@ -138,10 +152,12 @@ function AnswerCard({
 function AnswerBody({
   answer,
   imageUrl,
+  found,
+  gate,
 }: {
   answer: PlaygroundAnswer;
   imageUrl: string | null;
-}) {
+} & BoxView) {
   switch (answer.type) {
     case "choice":
       return (
@@ -192,7 +208,7 @@ function AnswerBody({
         </div>
       );
     case "box":
-      return <BoxBody answer={answer} imageUrl={imageUrl} />;
+      return <BoxBody answer={answer} imageUrl={imageUrl} found={found} gate={gate} />;
     default: {
       const exhaustive: never = answer;
       return exhaustive;
@@ -200,13 +216,15 @@ function AnswerBody({
   }
 }
 
-// A Box answer is always a box, even when nothing is there. Below this confidence, treat it as not found.
-const BOX_FOUND = 0.5;
-
-function BoxBody({ answer, imageUrl }: { answer: BoxAnswer; imageUrl: string | null }) {
+// A Box answer is always a box, even when nothing is there; boxFound (lib/branch) decides whether to draw it.
+function BoxBody({
+  answer,
+  imageUrl,
+  found,
+  gate,
+}: { answer: BoxAnswer; imageUrl: string | null } & BoxView) {
   const { top, bottom, left, right } = answer.box;
   const pct = (value: number) => `${(Math.min(1, Math.max(0, value)) * 100).toFixed(1)}%`;
-  const found = answer.confidence !== null && answer.confidence >= BOX_FOUND;
   return (
     <div>
       <p className="font-mono text-sm text-paper">
@@ -218,8 +236,9 @@ function BoxBody({ answer, imageUrl }: { answer: BoxAnswer; imageUrl: string | n
       </p>
       {!found ? (
         <p className="mt-1 text-sm text-muted" data-testid="box-not-found">
-          Not found: confidence is under {BOX_FOUND}. Jev always returns a box, so a low-confidence box marks
-          nothing. Ask a Noul about whether it is there.
+          {gate
+            ? `Not found: ${gate} says it is not there. Jev always returns a box, so this one marks nothing.`
+            : "Not found: confidence is under 0.5. Jev always returns a box, so a low-confidence box marks nothing. Ask a Noul about whether it is there."}
         </p>
       ) : null}
       {imageUrl ? (

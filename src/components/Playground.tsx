@@ -261,6 +261,7 @@ export function Playground() {
             response={response}
             branch={branch}
             imageUrl={image?.url ?? null}
+            boxGates={example.boxGates}
           />
         </main>
       </div>
