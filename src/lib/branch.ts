@@ -7,6 +7,7 @@ import type {
   PlaygroundAnswer,
   ScoreAnswer,
 } from "@/lib/types";
+import { exampleById } from "@/lib/examples";
 
 const THIN_CONFIDENCE = 0.7;
 const RECRUIT_CONFIDENCE = 0.75;
@@ -545,7 +546,7 @@ function decideReturns(
   if ((outcome.choice === "refund" || outcome.choice === "replace") && (!isNoul(visible) || visible.noul < LOW_NOUL)) {
     return hold("human_review", `Choice is ${outcome.choice} but no damage is visible in the photo. A person checks it.`, code);
   }
-  const areaNote = isBox(area) && boxFound(answers, "damage_area", { damage_area: "damage_visible" })
+  const areaNote = isBox(area) && boxFound(answers, "damage_area", exampleById("returns").boxGates)
     ? ` Damage boxed at ${Math.round(area.box.top * 100)}–${Math.round(area.box.bottom * 100)}% down, ${Math.round(area.box.left * 100)}–${Math.round(area.box.right * 100)}% across.`
     : "";
   if (outcome.choice === "human_review") {
